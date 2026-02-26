@@ -5,36 +5,30 @@
 //  Created by Olya Parsheva on 18.02.2026.
 //
 
-// @StateObject - ViewModel живет весь жизненный цикл View
-// @Environment - доступ в базе данных (системным объектам)
-// @State - простое локальное состояние
-
 import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @StateObject private var viewModel = CalculatorViewModel() // владеет ViewModel
-    @Environment(\.modelContext) private var modelContext // доступ к БД из окружения
-    @State private var showHistory = false // локальное состояние
+    @StateObject private var viewModel = CalculatorViewModel()
+    @Environment(\.modelContext) private var modelContext
+    @State private var showHistory = false
     
     let buttons: [[String]] = [
         ["C", "^", "%", "/"],
         ["7", "8", "9", "*"],
         ["4", "5", "6", "-"],
         ["1", "2", "3", "+"],
-        ["0", ".", "=", "+"]
+        ["","0", ".", "="]
     ]
     
     var body: some View {
         VStack(spacing: 10) {
-            // Верхняя панель с кнопкой истории
+            // Верхняя панель
             HStack {
                 Text("Web Calculator")
                     .font(.headline)
                     .foregroundColor(.secondary)
-                
                 Spacer()
-                
                 Button(action: { showHistory = true }) {
                     Label("История", systemImage: "clock")
                 }
@@ -59,21 +53,9 @@ struct ContentView: View {
             }
             .padding()
             
-            // Кнопки
-            VStack(spacing: 8) {
-                ForEach(0..<5, id: \.self) { row in
-                    HStack(spacing: 8) {
-                        ForEach(0..<4, id: \.self) { col in
-                            let button = buttons[row][col]
-                            CalculatorButton(title: button) {
-                                handleButtonTap(button)
-                            }
-                            .frame(width: 70, height: 70)
-                        }
-                    }
-                }
-            }
-            .padding()
+            // Клавиатура (вынесена в отдельную вью)
+            CalculatorKeyboard(buttons: buttons, action: handleButtonTap)
+                .padding()
         }
         .frame(minWidth: 400, minHeight: 500)
         .background(Color.gray.opacity(0.1))
@@ -90,6 +72,7 @@ struct ContentView: View {
         }
     }
     
+    // MARK: - Обработка нажатий
     private func handleButtonTap(_ title: String) {
         Task {
             switch title {
@@ -99,12 +82,10 @@ struct ContentView: View {
                 viewModel.inputDecimal()
             case "C":
                 viewModel.clear()
-            case "=", "+":
-                if title == "=" {
-                    await viewModel.calculate()
-                } else {
-                    await viewModel.performOperation("add")
-                }
+            case "=":
+                await viewModel.calculate()
+            case "+":
+                await viewModel.performOperation("add")
             case "-":
                 await viewModel.performOperation("sub")
             case "*":
@@ -124,40 +105,55 @@ struct ContentView: View {
     private func handleKeyPress(_ keyPress: KeyPress) {
         Task {
             let key = keyPress.characters.lowercased()
-            
             if let digit = Int(key) {
                 viewModel.inputDigit(digit)
                 return
             }
-            
             switch key {
-            case "+":
-                await viewModel.performOperation("add")
-            case "-":
-                await viewModel.performOperation("sub")
-            case "*":
-                await viewModel.performOperation("mul")
-            case "/":
-                await viewModel.performOperation("div")
-            case "%":
-                await viewModel.performOperation("mod")
-            case "^":
-                await viewModel.performOperation("pow")
-            case ".", ",":
-                viewModel.inputDecimal()
-            case "=", "\r":
-                await viewModel.calculate()
-            case "c", "escape":
-                viewModel.clear()
-            case "h":
-                showHistory = true
-            default:
-                break
+            case "+": await viewModel.performOperation("add")
+            case "-": await viewModel.performOperation("sub")
+            case "*": await viewModel.performOperation("mul")
+            case "/": await viewModel.performOperation("div")
+            case "%": await viewModel.performOperation("mod")
+            case "^": await viewModel.performOperation("pow")
+            case ".", ",": viewModel.inputDecimal()
+            case "=", "\r": await viewModel.calculate()
+            case "c", "escape": viewModel.clear()
+            case "h": showHistory = true
+            default: break
             }
         }
     }
 }
 
+// MARK: - Вынесенная клавиатура
+struct CalculatorKeyboard: View {
+    let buttons: [[String]]
+    let action: (String) -> Void
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            ForEach(0..<buttons.count, id: \.self) { row in
+                HStack(spacing: 8) {
+                    ForEach(0..<buttons[row].count, id: \.self) { col in
+                        let title = buttons[row][col]
+                        Group {
+                            if !title.isEmpty {
+                                CalculatorButton(title: title) {
+                                    action(title)
+                                }
+                            } else {
+                                Color(.clear)
+                            }
+                        } .frame(width: 70, height: 70)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Кнопка калькулятора
 struct CalculatorButton: View {
     let title: String
     let action: () -> Void
@@ -175,18 +171,15 @@ struct CalculatorButton: View {
     
     private var buttonColor: Color {
         switch title {
-        case "C", "^", "%":
-            return Color.orange.opacity(0.8)
-        case "=", "+", "-", "*", "/":
-            return Color.orange
-        case "0":
-            return Color.gray.opacity(0.3)
-        default:
-            return Color.gray.opacity(0.5)
+        case "C", "^", "%": return Color.orange.opacity(0.8)
+        case "=", "+", "-", "*", "/": return Color.orange
+        case "0": return Color.gray.opacity(0.3)
+        default: return Color.gray.opacity(0.5)
         }
     }
 }
 
+// MARK: - Preview
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
