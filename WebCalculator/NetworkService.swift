@@ -8,8 +8,8 @@
 import Foundation
 
 class NetworkService {
-    static let shared = NetworkService()
-    private let baseURL = "http://185.200.179.100:8083/api/calc"
+    static let shared = NetworkService() // единственный экземпляр
+    private let baseURL = "http://185.200.179.100:8083/api/calc" // приватный нициализатор
     
     private init() {}
     
@@ -19,11 +19,11 @@ class NetworkService {
         guard let url = URL(string: baseURL) else {
             throw NetworkError.invalidURL
         }
-        
+        // URLRequest конфигурация
         var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.httpBody = try JSONEncoder().encode(request)
+        urlRequest.httpMethod = "POST" // отправляем данные на сервер
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type") // говорим, что отправляем JSON
+        urlRequest.httpBody = try JSONEncoder().encode(request) // данные в JSON формате
         
         let (data, response) = try await URLSession.shared.data(for: urlRequest)
         

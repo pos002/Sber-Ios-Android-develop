@@ -5,16 +5,18 @@
 //  Created by Olya Parsheva on 18.02.2026.
 //
 
+// свойства с оберткой @Published автоматически уведомляет View об изменениях
+
 import Foundation
 import Combine
 import SwiftData
 
 class CalculatorViewModel: ObservableObject {
-    @Published var display: String = "0"
-    @Published var firstOperand: Float?
-    @Published var operation: String?
-    @Published var waitingForSecondOperand: Bool = false
-    @Published var errorMessage: String?
+    @Published var display: String = "0" // что видно на экране
+    @Published var firstOperand: Float? // первый введенный операнд
+    @Published var operation: String? // выбранная операция
+    @Published var waitingForSecondOperand: Bool = false // флаг состояния
+    @Published var errorMessage: String? // сообщение об ошибке
     @Published var showHistory: Bool = false
     
     private let networkService = NetworkService.shared
@@ -55,6 +57,7 @@ class CalculatorViewModel: ObservableObject {
         }
     }
     
+    // асинхронные вычисления
     func performOperation(_ op: String) async {
         if errorMessage != nil {
             errorMessage = nil
@@ -160,7 +163,7 @@ class CalculatorViewModel: ObservableObject {
         context.insert(historyItem)
         
         do {
-            try context.save()
+            try context.save() // сохраняем в историю
             print("Сохранено в историю: \(a) \(getOperationSymbol(operation)) \(b) = \(result)")
         } catch {
             print("Ошибка сохранения в историю: \(error)")

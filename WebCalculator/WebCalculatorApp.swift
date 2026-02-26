@@ -11,16 +11,16 @@ import SwiftData
 @main
 struct WebCalculatorApp: App {
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
+        let schema = Schema([ // схема БД
             CalculationHistory.self,
         ])
-        let modelConfiguration = ModelConfiguration(
+        let modelConfiguration = ModelConfiguration( // конфигурация
             schema: schema,
             isStoredInMemoryOnly: false
         )
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema, configurations: [modelConfiguration]) // контейнер БД
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }

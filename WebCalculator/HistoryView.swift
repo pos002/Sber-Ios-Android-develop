@@ -5,6 +5,8 @@
 //  Created by Olya Parsheva on 19.02.2026.
 //
 
+// @Query - автоматически загружает данные из SwiftData, сортирует по времени и обновляется при изменениях в БД
+
 import SwiftUI
 import SwiftData
 
@@ -29,6 +31,7 @@ struct HistoryView: View {
                             .foregroundColor(.gray)
                     }
                 } else {
+                    // табличное представление
                     Table(history) {
                         TableColumn("Время") { item in
                             Text(item.timestamp, style: .time)

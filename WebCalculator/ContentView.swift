@@ -5,13 +5,17 @@
 //  Created by Olya Parsheva on 18.02.2026.
 //
 
+// @StateObject - ViewModel живет весь жизненный цикл View
+// @Environment - доступ в базе данных (системным объектам)
+// @State - простое локальное состояние
+
 import SwiftUI
 import SwiftData
 
 struct ContentView: View {
-    @StateObject private var viewModel = CalculatorViewModel()
-    @Environment(\.modelContext) private var modelContext
-    @State private var showHistory = false
+    @StateObject private var viewModel = CalculatorViewModel() // владеет ViewModel
+    @Environment(\.modelContext) private var modelContext // доступ к БД из окружения
+    @State private var showHistory = false // локальное состояние
     
     let buttons: [[String]] = [
         ["C", "^", "%", "/"],
