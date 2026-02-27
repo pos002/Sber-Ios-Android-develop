@@ -39,8 +39,9 @@ class CalculatorViewController: UIViewController {
         ["7", "8", "9", "*"],
         ["4", "5", "6", "-"],
         ["1", "2", "3", "+"],
-        ["0", ".", "="]
+        ["", "0", ".", "="]
     ]
+    
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -74,6 +75,7 @@ class CalculatorViewController: UIViewController {
         
         // Контейнер для кнопок
         let buttonsStack = createButtons()
+        
         buttonsStack.translatesAutoresizingMaskIntoConstraints = false
         
         view.addSubview(historyButton)
@@ -106,27 +108,35 @@ class CalculatorViewController: UIViewController {
         outerStack.axis = .vertical
         outerStack.spacing = 8
         outerStack.distribution = .fillEqually
-        
+
         for row in buttons {
             let rowStack = UIStackView()
             rowStack.axis = .horizontal
             rowStack.spacing = 8
             rowStack.distribution = .fillEqually
-            
+
             for title in row {
-                let button = UIButton(type: .system)
-                button.setTitle(title, for: .normal)
-                button.titleLabel?.font = .systemFont(ofSize: 24, weight: .medium)
-                button.setTitleColor(.white, for: .normal)
-                button.backgroundColor = buttonColor(for: title)
-                button.layer.cornerRadius = 10
-                button.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
-                rowStack.addArrangedSubview(button)
+                if title.isEmpty {
+                    // Создаём пустой UIView для отступа
+                    let spacer = UIView()
+                    spacer.backgroundColor = .clear
+                    rowStack.addArrangedSubview(spacer)
+                } else {
+                    let button = UIButton(type: .system)
+                    button.setTitle(title, for: .normal)
+                    button.titleLabel?.font = .systemFont(ofSize: 24, weight: .medium)
+                    button.setTitleColor(.white, for: .normal)
+                    button.backgroundColor = buttonColor(for: title)
+                    button.layer.cornerRadius = 10
+                    button.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
+                    rowStack.addArrangedSubview(button)
+                }
             }
             outerStack.addArrangedSubview(rowStack)
         }
         return outerStack
     }
+
     
     private func buttonColor(for title: String) -> UIColor {
         switch title {
